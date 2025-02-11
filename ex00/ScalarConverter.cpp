@@ -21,27 +21,27 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& copy) {
 
 // checks if the literal type is float or double
 //! test with 1.f and 1.
-bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) { 
+bool ScalarConverter::isFloatDouble(const std::string& literal, bool& boolFloat, bool& boolDouble) { 
 
 	size_t periodPosition	= literal.find('.');
 	size_t len 				= literal.length() - 1;
 
 	// check if there is a period
 	if (periodPosition == std::string::npos)
-		return false;
+		return ;
 
 	// check if every char BEFORE '.' is a number
 	for (int i = periodPosition - 1; i >= 0; i--)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
-			return false;
+			return ;
 	}
 
 	// check if every char (except the last) AFTER '.' is a number
 	for (int i = periodPosition + 1; i <= len; i++)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
-			return false;
+			return ;
 	}
 
 	// check if last char is 'f'. if last char is number, flip double bool
@@ -49,10 +49,11 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[len])) == true || literal[len] == '.')
 			boolDouble = true;
-		return false;
+		return ;
 	}
 
-	return true;
+	boolFloat = true;
+	return ;
 };
 
 // checks if the literal type is int
@@ -84,7 +85,7 @@ void ScalarConverter::convert(std::string literal) {
 	bool boolInt = false;
 	bool boolChar = false;
 
-	boolFloat = isFloat(literal, boolDouble);
+	isFloatDouble(literal, boolFloat, boolDouble);
 	if (boolFloat == false && boolDouble == false)
 		boolInt = isInt(literal);
 
@@ -92,7 +93,7 @@ void ScalarConverter::convert(std::string literal) {
 		boolChar = isChar(literal);
 
 	if (boolChar == false)
-		throw 
+		throw std::invalid_argument("Argument is not a literal");
 
 
 

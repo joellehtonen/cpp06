@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <cctype>
+#include <exception>
 
 class ScalarConverter {
 	private:
@@ -15,7 +16,7 @@ class ScalarConverter {
 		//static void	checkLiteralType(const std::string& literal, bool& boolDouble, bool& boolFloat, bool& boolInt, bool& boolChar);
 		static bool	isChar(const std::string& literal);
 		static bool	isInt(const std::string& literal);
-		static bool	isFloat(const std::string& literal, bool& boolDouble);
+		static void	isFloatDouble(const std::string& literal, bool& boolFloat, bool& boolDouble);
 		//static bool	isDouble(const std::string& literal);
 
 
