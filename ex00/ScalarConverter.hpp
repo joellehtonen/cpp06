@@ -12,6 +12,7 @@ class ScalarConverter {
 		ScalarConverter& operator=(const ScalarConverter& copy);
 
 		//HELPER FUNCTIONS
+		//static void	checkLiteralType(const std::string& literal, bool& boolDouble, bool& boolFloat, bool& boolInt, bool& boolChar);
 		static bool	isChar(const std::string& literal);
 		static bool	isInt(const std::string& literal);
 		static bool	isFloat(const std::string& literal, bool& boolDouble);
