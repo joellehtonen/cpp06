@@ -25,7 +25,12 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 	size_t periodPosition = literal.find('.');
 	if (periodPosition == std::string::npos)
 		return false;
-	
+
+	// check period is not first or last
+	size_t len = literal.length() - 1;
+	if (periodPosition == 0 || periodPosition == len)
+		return false;
+
 	// check if every digit BEFORE '.' is a number
 	for (int i = periodPosition - 1; i >= 0; i--)
 	{
@@ -33,42 +38,51 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 			return false;
 	}
 
-	// check if every digit (except the last) AFTER '.' is a number
-	size_t len = literal.length();
+	// check if every digit (except the last) AFTER '.' is a number or 'f'
 	for (int i = periodPosition + 1; i <= len - periodPosition - 1; i++)
 	{
 		if (literal[i] < 48 || literal[i] > 57)
 			return false;
 	}
 
-	// check if last char is 'f'. if last char is number instead, flip double bool
-	if (literal[len] != 'f')
+	// check if last char is 'f'. if last char is number, flip double bool
+	if (literal[len - 1] != 'f')
 	{
-		if (literal[len] >= 48 && literal[len] <= 57)
+		if ((literal[len] >= 48 && literal[len] <= 57) || literal[len] == '.')
 			boolDouble = true;
 		return false;
 	}
 
 	return true;
+	//! TEST WITH 1.f and 1.
 };
 
-// bool ScalarConverter::isChar(std::string literal)
-// {
-// 	for (int i; i = 0; i <= literal.length())
-// 	{
-// 		if (literal[i] >= 33 && literal[i] <= 126)
-// 		return (true);
-// 	}
-// 	// handle strings too
-// };
+bool ScalarConverter::isInt(const std::string& literal)
+{
+	size_t len = literal.length() - 1;
+	for (int i = 0; i <= len; i++)
+	{
+		if (literal[i] < 48 && literal[i] > 57)
+			return false;
+	}
+	return true;
+}
 
-
+bool ScalarConverter::isChar(const std::string& literal)
+{
+	size_t len = literal.length() - 1;
+	if (len != 1)
+		return false;
+	if (literal[0] < 33 || literal[0] > 126)
+		return false;
+	return true;
+};
 
 void ScalarConverter::convert(std::string literal) {
 	bool boolDouble = false;
-	bool boolFloat = isFloat(literal, &boolDouble);
-	bool boolInt;
-	bool boolChar;
+	bool boolFloat = isFloat(literal, boolDouble);
+	bool boolInt = isInt(literal);
+	bool boolChar = isChar(literal);
 
 	// isFloatDouble(literal, boolFloat, boolDouble);
 	// isInt(literal, boolInt);
