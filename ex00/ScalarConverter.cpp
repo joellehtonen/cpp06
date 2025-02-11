@@ -19,6 +19,8 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& copy) {
 	return *this;
 };
 
+// checks if the literal type is float or double
+//! test with 1.f and 1.
 bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) { 
 
 	size_t periodPosition	= literal.find('.');
@@ -26,10 +28,6 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 
 	// check if there is a period
 	if (periodPosition == std::string::npos)
-		return false;
-
-	// check period is not first or last
-	if (periodPosition == 0 || periodPosition == len)
 		return false;
 
 	// check if every digit BEFORE '.' is a number
@@ -55,9 +53,9 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 	}
 
 	return true;
-	//! TEST WITH 1.f and 1.
 };
 
+// checks if the literal type is int
 bool ScalarConverter::isInt(const std::string& literal)
 {
 	size_t len = literal.length() - 1;
@@ -69,6 +67,7 @@ bool ScalarConverter::isInt(const std::string& literal)
 	return true;
 }
 
+// checks if the literal type is char
 bool ScalarConverter::isChar(const std::string& literal)
 {
 	size_t len = literal.length() - 1;
@@ -86,7 +85,7 @@ void ScalarConverter::convert(std::string literal) {
 	bool boolInt = isInt(literal);
 	bool boolChar = isChar(literal);
 
-
+	if (boolDouble )
 	//handle strings by checking these in this order, and if more than one = true, then flag as false input (= not literal)
 
 
