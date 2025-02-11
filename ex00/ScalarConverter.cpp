@@ -21,7 +21,7 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& copy) {
 
 // checks if the literal type is float or double
 //! test with 1.f and 1.
-bool ScalarConverter::isFloatDouble(const std::string& literal, bool& boolFloat, bool& boolDouble) { 
+void ScalarConverter::isFloatDouble(const std::string& literal, bool& boolFloat, bool& boolDouble) { 
 
 	size_t periodPosition	= literal.find('.');
 	size_t len 				= literal.length() - 1;
@@ -88,13 +88,19 @@ void ScalarConverter::convert(std::string literal) {
 	isFloatDouble(literal, boolFloat, boolDouble);
 	if (boolFloat == false && boolDouble == false)
 		boolInt = isInt(literal);
-
 	if (boolInt == false)
 		boolChar = isChar(literal);
-
 	if (boolChar == false)
 		throw std::invalid_argument("Argument is not a literal");
 
+	if (boolDouble == false)
+		makeDouble(literal);
+	if (boolFloat == false)
+		makeFloat(literal);
+	if (boolInt == false)
+		makeInt(literal);
+	if (boolChar == false)
+		makeChar(literal);
 
 
 	//handle strings by checking these in this order, and if more than one = true, then flag as false input (= not literal)
