@@ -30,14 +30,14 @@ bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) {
 	if (periodPosition == std::string::npos)
 		return false;
 
-	// check if every digit BEFORE '.' is a number
+	// check if every char BEFORE '.' is a number
 	for (int i = periodPosition - 1; i >= 0; i--)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return false;
 	}
 
-	// check if every digit (except the last) AFTER '.' is a number
+	// check if every char (except the last) AFTER '.' is a number
 	for (int i = periodPosition + 1; i <= len; i++)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
@@ -78,14 +78,24 @@ bool ScalarConverter::isChar(const std::string& literal)
 	return true;
 };
 
-
 void ScalarConverter::convert(std::string literal) {
 	bool boolDouble = false;
-	bool boolFloat = isFloat(literal, boolDouble);
-	bool boolInt = isInt(literal);
-	bool boolChar = isChar(literal);
+	bool boolFloat = false;
+	bool boolInt = false;
+	bool boolChar = false;
 
-	if (boolDouble )
+	boolFloat = isFloat(literal, boolDouble);
+	if (boolFloat == false && boolDouble == false)
+		boolInt = isInt(literal);
+
+	if (boolInt == false)
+		boolChar = isChar(literal);
+
+	if (boolChar == false)
+		throw 
+
+
+
 	//handle strings by checking these in this order, and if more than one = true, then flag as false input (= not literal)
 
 
