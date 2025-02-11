@@ -19,64 +19,68 @@ ScalarConverter& ScalarConverter::operator=(const ScalarConverter& copy) {
 	return *this;
 };
 
-bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) { 
+// bool ScalarConverter::isFloat(const std::string& literal, bool& boolDouble) { 
 
-	// check if there is a period
-	size_t periodPosition = literal.find('.');
-	if (periodPosition == std::string::npos)
-		return false;
+// 	// check if there is a period
+// 	size_t periodPosition = literal.find('.');
+// 	if (periodPosition == std::string::npos)
+// 		return false;
 
-	// check period is not first or last
-	size_t len = literal.length() - 1;
-	if (periodPosition == 0 || periodPosition == len)
-		return false;
+// 	// check period is not first or last
+// 	size_t len = literal.length() - 1;
+// 	if (periodPosition == 0 || periodPosition == len)
+// 		return false;
 
-	// check if every digit BEFORE '.' is a number
-	for (int i = periodPosition - 1; i >= 0; i--)
-	{
-		if (literal[i] < 48 || literal[i] > 57)
-			return false;
-	}
+// 	// check if every digit BEFORE '.' is a number
+// 	for (int i = periodPosition - 1; i >= 0; i--)
+// 	{
+// 		if (std::isdigit(static_cast<unsigned char>(literal[len])) == false)
+// 			return false;
+// 	}
 
-	// check if every digit (except the last) AFTER '.' is a number or 'f'
-	for (int i = periodPosition + 1; i <= len - periodPosition - 1; i++)
-	{
-		if (literal[i] < 48 || literal[i] > 57)
-			return false;
-	}
+// 	// check if every digit (except the last) AFTER '.' is a number
+// 	for (int i = periodPosition + 1; i <= len - periodPosition - 1; i++)
+// 	{
+// 		if (std::isdigit(static_cast<unsigned char>(literal[len])) == false)
+// 			return false;
+// 	}
 
-	// check if last char is 'f'. if last char is number, flip double bool
-	if (literal[len - 1] != 'f')
-	{
-		if ((literal[len] >= 48 && literal[len] <= 57) || literal[len] == '.')
-			boolDouble = true;
-		return false;
-	}
+// 	// check if last char is 'f'. if last char is number, flip double bool
+// 	if (literal[len] != 'f')
+// 	{
+// 		if (std::isdigit(static_cast<unsigned char>(literal[len])) == true || literal[len] == '.')
+// 			boolDouble = true;
+// 		return false;
+// 	}
 
-	return true;
-	//! TEST WITH 1.f and 1.
-};
+// 	return true;
+// 	//! TEST WITH 1.f and 1.
+// };
 
-bool ScalarConverter::isInt(const std::string& literal)
-{
-	size_t len = literal.length() - 1;
-	for (int i = 0; i <= len; i++)
-	{
-		if (literal[i] < 48 && literal[i] > 57)
-			return false;
-	}
-	return true;
-}
+// bool ScalarConverter::isInt(const std::string& literal)
+// {
+// 	size_t len = literal.length() - 1;
+// 	for (int i = 0; i <= len; i++)
+// 	{
+// 		if (std::isdigit(static_cast<unsigned char>(literal[i]) == false))
+// 			return false;
+// 	}
+// 	return true;
+// }
 
-bool ScalarConverter::isChar(const std::string& literal)
-{
-	size_t len = literal.length() - 1;
-	if (len != 1)
-		return false;
-	if (literal[0] < 33 || literal[0] > 126)
-		return false;
-	return true;
-};
+// bool ScalarConverter::isChar(const std::string& literal)
+// {
+// 	size_t len = literal.length() - 1;
+// 	if (len != 1)
+// 		return false;
+// 	if (std::isprint(static_cast<unsigned char>(literal[0]) == false))
+// 		return false;
+// 	return true;
+	
+// 	// if (literal[0] < 33 || literal[0] > 126)
+// 	// 	return false;
+// 	// return true;
+// };
 
 void ScalarConverter::convert(std::string literal) {
 	bool boolDouble = false;
