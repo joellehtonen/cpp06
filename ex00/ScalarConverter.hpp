@@ -12,13 +12,29 @@ class ScalarConverter {
 		ScalarConverter(const ScalarConverter& copy);
 		ScalarConverter& operator=(const ScalarConverter& copy);
 
-		//HELPER FUNCTIONS
-		//static void	checkLiteralType(const std::string& literal, bool& boolDouble, bool& boolFloat, bool& boolInt, bool& boolChar);
-		static bool	isChar(const std::string& literal);
-		static bool	isInt(const std::string& literal);
-		static void	isFloatDouble(const std::string& literal, bool& boolFloat, bool& boolDouble);
-		//static bool	isDouble(const std::string& literal);
+		//VARIABLES
+		static bool foundChar;
+		static bool foundInt;
+		static bool foundFloat;
+		static bool foundDouble;
+		static std::string exceptionType;
 
+		//HELPER FUNCTIONS
+		static bool nothingFound();
+		static void	isFloatDouble(const std::string& literal);
+		static void	isInt(const std::string& literal);
+		static void	isChar(const std::string& literal);
+		static void isException(const std::string& literal);
+		static void		handleException();
+		static void		handleChar(const std::string& literal);
+		static void		handleInt(const std::string& literal);
+		static void		handleFloat(const std::string& literal);
+		static void		handleDouble(const std::string& literal);
+		static double	makeDouble(const std::string& literal);
+		static float	makeFloat(const std::string& literal);
+		static int		makeInt(const std::string& literal);
+		static char		makeChar(const std::string& literal);
+		static std::string makeString(const std::string& literal);
 
 	public:
 		static void	convert(std::string literal);

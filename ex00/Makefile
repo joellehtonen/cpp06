@@ -1,6 +1,6 @@
-NAME	=	scalar
+NAME	=	convert
 CC		=	c++
-FLAGS	=	-Wall -Wextra -Werror -std=c++20
+FLAGS	=	-Wall -Wextra -Werror -std=c++20 -g
 SRCS	=	main.cpp \
 			ScalarConverter.cpp
 OBJS	=	$(SRCS:.cpp=.o)
