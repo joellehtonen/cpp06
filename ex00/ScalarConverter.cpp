@@ -26,11 +26,12 @@ void ScalarConverter::convert(std::string literal) {
 	bool		foundChar = false;
 	bool		somethingFound = false;
 	std::string	exceptionType = "";
+	int			decimalCount = 0;
 
 	if (literal.length() == 0)
 		throw std::invalid_argument("Argument cannot be empty");
 
-	isFloatDouble(literal, &somethingFound, &foundFloat, &foundDouble);
+	isFloatDouble(literal, &somethingFound, &foundFloat, &foundDouble, &decimalCount);
 	if (somethingFound == false)
 		isInt(literal, &somethingFound, &foundInt);
 	if (somethingFound == false)
@@ -40,11 +41,11 @@ void ScalarConverter::convert(std::string literal) {
 	if (somethingFound == false && exceptionType == "")
 		throw std::invalid_argument("Argument is not a literal");
 
-	std::cout << "boolchar = " << foundChar << std::endl;
-	std::cout << "boolint = " << foundInt << std::endl;
-	std::cout << "boolfloat = " << foundFloat << std::endl;
-	std::cout << "booldouble = " << foundDouble << std::endl;
-	std::cout << "boolexception = " << exceptionType << std::endl;
+	// std::cout << "boolchar = " << foundChar << std::endl;
+	// std::cout << "boolint = " << foundInt << std::endl;
+	// std::cout << "boolfloat = " << foundFloat << std::endl;
+	// std::cout << "booldouble = " << foundDouble << std::endl;
+	// std::cout << "boolexception = " << exceptionType << std::endl;
 
 	char	literalChar = '0';
 	int		literalInt = 0;
@@ -53,70 +54,69 @@ void ScalarConverter::convert(std::string literal) {
 
 	if (foundChar == true)
 	{
-		literalChar = makeChar(literal);
+		literalChar = makeChar(literal, &exceptionType);
 		convertFromChar(&literalChar, &literalInt, &literalFloat, &literalDouble);
 	}
 	else if (foundInt == true)
 	{
-		literalInt = makeInt(literal);
+		literalInt = makeInt(literal, &exceptionType);
 		convertFromInt(&literalChar, &literalInt, &literalFloat, &literalDouble);
 	}
 	else if (foundFloat == true)
 	{
-		literalFloat = makeFloat(literal);
+		literalFloat = makeFloat(literal, &exceptionType);
 		convertFromFloat(&literalChar, &literalInt, &literalFloat, &literalDouble);
 	}
 	else if (foundDouble == true)
 	{
-		literalDouble = makeDouble(literal);
+		literalDouble = makeDouble(literal, &exceptionType);
 		convertFromDouble(&literalChar, &literalInt, &literalFloat, &literalDouble);
 	}
-	if (exceptionType != "")
-		handleException();
+	// if (exceptionType != "")
+	// 	handleException();
 
-	printLiterals(&literalChar, &literalInt, &literalFloat, &literalDouble, &exceptionType);
+	printLiterals(literalChar, literalInt, literalFloat, literalDouble, exceptionType, decimalCount);
 	//TODO handle conversions that dont make sense, overflows
 	//TODO print messages for these ("impossible"?)
 	//? which headers handle numeric limits and special values
 };
 
-// checks if the literal type is float or double
 //! test with 1.f and 1.
-void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingFound, bool* foundFloat, bool* foundDouble) { 
+void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingFound, bool* foundFloat, bool* foundDouble, int* decimalCount) { 
 
-	size_t periodPosition	= literal.find('.');
-	size_t len 				= literal.length() - 1;
+	size_t	periodPosition	= literal.find('.');
+	size_t	len 			= literal.length() - 1;
 
-	// check if there is a period
 	if (periodPosition == std::string::npos)
 		return ;
 
-	// check if every char BEFORE '.' is a number
 	for (int i = periodPosition - 1; i >= 0; i--)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return ;
 	}
 
-	// check if every char (except the last) AFTER '.' is a number
 	for (size_t i = periodPosition + 1; i < len; i++)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return ;
+		*decimalCount += 1;
 	}
 
-	// check if last char is 'f'. if last char is number, flip double bool
-	if (literal[len] != 'f') //&& literal[len] != 'F')
+	if (literal[len] != 'f')
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[len])) == true || literal[len] == '.')
 		{
 			*somethingFound = true;
 			*foundDouble = true;
+			*decimalCount += 1;
 		}
 		return ;
 	}
 	*somethingFound = true;
 	*foundFloat = true;
+	if (*decimalCount == 0)
+		*decimalCount += 1;
 	return ;
 };
 
@@ -159,26 +159,36 @@ void ScalarConverter::isException(const std::string& literal, std::string* excep
 	return ;
 };
 
-double ScalarConverter::makeDouble(const std::string& literal) {
-	return (std::stod(literal));
+double ScalarConverter::makeDouble(const std::string& literal, std::string* exceptionType) {
+	double check = std::stod(literal);
+	if (check < 32 || check	> 126)
+		*exceptionType = "non-printable";
+	return (check);
 };
 
-float ScalarConverter::makeFloat(const std::string& literal) {
-	return (std::stof(literal));
+float ScalarConverter::makeFloat(const std::string& literal, std::string* exceptionType) {
+	float check = std::stof(literal);
+	if (check < 32 || check	> 126)
+		*exceptionType = "non-printable";
+	return (check);
 };
 
-int ScalarConverter::makeInt(const std::string& literal) {
-	return (std::stoi(literal));
+int ScalarConverter::makeInt(const std::string& literal, std::string* exceptionType) {
+	int check = stoi(literal);
+	if (check < 32 || check	> 126)
+		*exceptionType = "non-printable";
+	return check;
 };
 
 char ScalarConverter::makeChar(const std::string& literal, std::string* exceptionType) {
-	unsigned int	asInteger = stoi(literal);
-	if (asInteger < 32 || asInteger	> 126)
+	unsigned int	check = stoi(literal);
+	std::cout << "check " << check << std::endl;
+	if (check < 32 || check	> 126)
 	{
 		*exceptionType = "non-printable";
 		return (static_cast<char>(0));
 	}
-	return static_cast<char>(asInteger);
+	return static_cast<char>(check);
 };
 
 // can be done? or alt approach?
@@ -206,30 +216,32 @@ void ScalarConverter::convertFromDouble(char* literalChar, int* literalInt, floa
 	*literalFloat = static_cast<float>(*literalDouble);
 };
 
-void ScalarConverter::printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, const std::string* exceptionType) 
+void ScalarConverter::printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, const std::string& exceptionType, const int& decimalCount) 
 {
-	if (*exceptionType == "")
+	if (exceptionType == "")
 	{
 		std::cout << "char: " << literalChar << std::endl;
 		std::cout << "int: " << literalInt << std::endl;
+		std::cout << std::fixed << std::setprecision(decimalCount);
 		std::cout << "float: " << literalFloat << "f" << std::endl;
 		std::cout << "double: " << literalDouble << std::endl;
 	}
-	else if (*exceptionType == "non-printable")
+	else if (exceptionType == "non-printable")
 	{
 		std::cout << "char: non-printable" << std::endl;
 		std::cout << "int: " << literalInt << std::endl;
+		std::cout << std::fixed << std::setprecision(decimalCount);
 		std::cout << "float: " << literalFloat << "f" << std::endl;
 		std::cout << "double: " << literalDouble << std::endl;
 	}
-	else if (*exceptionType == "nan")
+	else if (exceptionType == "nan")
 	{
 		std::cout << "char: impossible" << std::endl;
 		std::cout << "int: impossible" << std::endl;
 		std::cout << "float: nan" << "f" << std::endl; //!Maybe these should be proper values within variables?
 		std::cout << "double: nan" << std::endl;
 	}
-	else if (*exceptionType == "+inf")
+	else if (exceptionType == "+inf")
 	{
 		std::cout << "char: impossible" << std::endl;
 		std::cout << "int: " << std::endl;
