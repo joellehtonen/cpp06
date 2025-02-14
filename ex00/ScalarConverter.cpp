@@ -45,12 +45,6 @@ void ScalarConverter::convert(std::string literal) {
 	if (somethingFound == false && exceptionType == "")
 		throw std::invalid_argument("Argument is not a literal");
 
-	// std::cout << "boolchar = " << foundChar << std::endl;
-	// std::cout << "boolint = " << foundInt << std::endl;
-	// std::cout << "boolfloat = " << foundFloat << std::endl;
-	// std::cout << "booldouble = " << foundDouble << std::endl;
-	// std::cout << "boolexception = " << exceptionType << std::endl;
-
 	char	literalChar = '0';
 	int		literalInt = 0;
 	float	literalFloat = 0.0f;
@@ -80,33 +74,38 @@ void ScalarConverter::convert(std::string literal) {
 	if (exceptionType != "")
 		handleExceptions(exceptionType, &literalInt, &literalFloat, &literalDouble);
 
-	printLiterals(literalChar, literalInt, literalFloat, literalDouble, exceptionType, &decimalCount);
-	//TODO handle conversions that dont make sense, overflows
-	//TODO print messages for these ("impossible"?)
-	//? which headers handle numeric limits and special values
+	printLiterals(literalChar, literalInt, literalFloat, literalDouble, exceptionType, &decimalCount, foundInt);
 };
 
 void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingFound, bool* foundFloat, bool* foundDouble, int* decimalCount) { 
 
 	size_t	periodPosition	= literal.find('.');
-	size_t	len 			= literal.length() - 1;
+	size_t	lastPosition 	= literal.length() - 1;
+
+	if (lastPosition > 310)
+		throw std::invalid_argument("String is too long");
 
 	if (periodPosition == std::string::npos)
 		return ;
 	for (int i = periodPosition - 1; i >= 0; i--)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
-			return ;
+		{
+			if (i == 0 && (literal[0] == '+' || literal[0] == '-'))
+				break ;
+			else
+				return ;
+		}
 	}
-	for (size_t i = periodPosition + 1; i < len; i++)
+	for (size_t i = periodPosition + 1; i < lastPosition; i++)
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return ;
 		*decimalCount += 1;
 	}
-	if (literal[len] != 'f')
+	if (literal[lastPosition] != 'f')
 	{
-		if (std::isdigit(static_cast<unsigned char>(literal[len])) == true || literal[len] == '.')
+		if (std::isdigit(static_cast<unsigned char>(literal[lastPosition])) != false || literal[lastPosition] == '.')
 		{
 			*somethingFound = true;
 			*foundDouble = true;
@@ -119,7 +118,6 @@ void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingF
 	return ;
 };
 
-//? check for signs?
 void ScalarConverter::isInt(const std::string& literal, bool* somethingFound, bool* foundInt)
 {
 	size_t len = literal.length() - 1;
@@ -151,18 +149,23 @@ void ScalarConverter::isException(const std::string& literal, std::string* excep
 {
 	if (literal == "nan" || literal == "nanf")
 		*exceptionType = "nan";
-	else if (literal == "+inf" || literal == "+inff")
+	else if (literal == "+inf" || literal == "+inff" || literal == "inf")
 		*exceptionType = "+inf";
 	else if (literal == "-inf" || literal == "-inff")
 		*exceptionType = "-inf";
 	return ;
 };
 
-// USE STD::ISPRINT INSTEAD OF CHECKS?
 double ScalarConverter::makeDouble(const std::string& literal, std::string* exceptionType) {
 	double check = std::stod(literal);
 	if (check < 32 || check	> 126)
+	{
 		*exceptionType = "non-printable";
+		if (check < 0 || check > 127)
+			*exceptionType += " | impossible conversion";
+		if (check < INT_MIN || check > INT_MAX)
+			*exceptionType += " | int overflow";
+	}
 	return check;
 };
 
@@ -173,8 +176,8 @@ float ScalarConverter::makeFloat(const std::string& literal, std::string* except
 		*exceptionType = "non-printable";
 		if (check < 0 || check > 127)
 			*exceptionType += " | impossible conversion";
-		if (check < FLT_MIN || check > FLT_MAX)
-			*exceptionType += " | float overflow";
+		if (check < INT_MIN || check > INT_MAX)
+			*exceptionType += " | int overflow";
 	}
 	return static_cast<float>(check);
 };
@@ -193,8 +196,7 @@ int ScalarConverter::makeInt(const std::string& literal, std::string* exceptionT
 };
 
 char ScalarConverter::makeChar(const std::string& literal, std::string* exceptionType) {
-	double check = std::stod(literal);
-	if (std::isprint(static_cast<unsigned char>(check)) == false)
+	if (std::isprint(static_cast<unsigned char>(literal[0])) == false)
 	{
 		*exceptionType = "non-printable";
 		return (static_cast<char>(0));
@@ -233,7 +235,7 @@ void ScalarConverter::handleExceptions(const std::string& exceptionType, int* li
 		*literalDouble = std::stof("nan");
 		return ;
 	}
-	else if (exceptionType == "+inf")
+	else if (exceptionType == "+inf" || exceptionType == "inf")
 	{
 		*literalInt = 2147483647;
 		*literalFloat = std::stof("inf");
@@ -248,8 +250,8 @@ void ScalarConverter::handleExceptions(const std::string& exceptionType, int* li
 	return ;
 };
 
-void ScalarConverter::printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, const std::string& exceptionType, int* decimalCount) {
-	std::cout << "exceptions: " << exceptionType << std::endl;
+void ScalarConverter::printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, \
+	const std::string& exceptionType, int* decimalCount, bool& foundInt) {
 	if (*decimalCount == 0)
 		*decimalCount += 1;
 
@@ -264,13 +266,13 @@ void ScalarConverter::printLiterals(const char& literalChar, const int& literalI
 		std::cout << "char: impossible" << std::endl;
 
 	//int
-	if (exceptionType.find("int overflow") || exceptionType == "nan")
+	if (exceptionType.find("int overflow") != std::string::npos || exceptionType == "nan")
 		std::cout << "int: impossible" << std::endl;
 	else
 		std::cout << "int: " << literalInt << std::endl;
 
 	//float
-	if (exceptionType.find("float overflow"))
+	if (exceptionType.find("int overflow") != std::string::npos && foundInt == true)
 		std::cout << "float: impossible" << std::endl;
 	else
 	{
@@ -279,8 +281,13 @@ void ScalarConverter::printLiterals(const char& literalChar, const int& literalI
 	}
 
 	//double
-	std::cout << std::fixed << std::setprecision(*decimalCount);
-	std::cout << "double: " << literalDouble << std::endl;
+	if (exceptionType.find("int overflow") != std::string::npos && foundInt == true)
+		std::cout << "double: impossible" << std::endl;
+	else
+	{
+		std::cout << std::fixed << std::setprecision(*decimalCount);
+		std::cout << "double: " << literalDouble << std::endl;
+	}
 
 
 	// if (exceptionType == "")

@@ -5,7 +5,6 @@
 #include <exception> //for std::exception
 #include <iomanip> //for setprecision
 #include <climits> //for int_max and int_min
-#include <cfloat> //for flt_max and flt_min
 
 class ScalarConverter {
 	private:
@@ -29,7 +28,7 @@ class ScalarConverter {
 		static void	convertFromInt(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble);
 		static void	convertFromFloat(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble);
 		static void	convertFromDouble(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble);
-		static void		printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, const std::string& exceptionType, int* decimalCount);
+		static void		printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, const std::string& exceptionType, int* decimalCount, bool& foundInt);
 
 	public:
 		static void	convert(std::string literal);
