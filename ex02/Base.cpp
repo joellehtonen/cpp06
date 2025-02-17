@@ -59,15 +59,15 @@ void identify(Base& p) {
 		(void)dynamic_cast<A&>(p);
 		std::cout << "reference is of class A\n";
 		return ;
-	} catch (std::exception& e) { }
+	} catch (std::exception& e) {std::cout << "not A\n";}
 	try {
 		(void)dynamic_cast<B&>(p);
 		std::cout << "reference is of class B\n";
 		return ;
-	} catch (std::exception& e) { }
+	} catch (std::exception& e) {std::cout << "not B\n";}
 	try {
 		(void)dynamic_cast<C&>(p);
 		std::cout << "reference is of class C\n";
 		return ;
-	} catch (std::exception& e) { }
+	} catch (std::exception& e) {std::cout << "not C\n";}
 };
