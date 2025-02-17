@@ -35,13 +35,13 @@ void ScalarConverter::convert(std::string literal) {
 	if (literal.length() == 0)
 		throw std::invalid_argument("Argument cannot be empty");
 
-	isFloatDouble(literal, &somethingFound, &foundFloat, &foundDouble, &decimalCount);
+	isFloatDouble(literal, somethingFound, foundFloat, foundDouble, decimalCount);
 	if (somethingFound == false)
-		isInt(literal, &somethingFound, &foundInt);
+		isInt(literal, somethingFound, foundInt);
 	if (somethingFound == false)
-		isChar(literal, &somethingFound, &foundChar);
+		isChar(literal, somethingFound, foundChar);
 	if (somethingFound == false)
-		isException(literal, &exceptionType);
+		isException(literal, exceptionType);
 	if (somethingFound == false && exceptionType == "")
 		throw std::invalid_argument("Argument is not a literal");
 
@@ -52,32 +52,32 @@ void ScalarConverter::convert(std::string literal) {
 
 	if (foundChar == true)
 	{
-		literalChar = makeChar(literal, &exceptionType);
-		convertFromChar(&literalChar, &literalInt, &literalFloat, &literalDouble);
+		literalChar = makeChar(literal, exceptionType);
+		convertFromChar(literalChar, literalInt, literalFloat, literalDouble);
 	}
 	else if (foundInt == true)
 	{
-		literalInt = makeInt(literal, &exceptionType);
-		convertFromInt(&literalChar, &literalInt, &literalFloat, &literalDouble);
+		literalInt = makeInt(literal, exceptionType);
+		convertFromInt(literalChar, literalInt, literalFloat, literalDouble);
 	}
 	else if (foundFloat == true)
 	{
-		literalFloat = makeFloat(literal, &exceptionType);
-		convertFromFloat(&literalChar, &literalInt, &literalFloat, &literalDouble);
+		literalFloat = makeFloat(literal, exceptionType);
+		convertFromFloat(literalChar, literalInt, literalFloat, literalDouble);
 	}
 	else if (foundDouble == true)
 	{
-		literalDouble = makeDouble(literal, &exceptionType);
-		convertFromDouble(&literalChar, &literalInt, &literalFloat, &literalDouble);
+		literalDouble = makeDouble(literal, exceptionType);
+		convertFromDouble(literalChar, literalInt, literalFloat, literalDouble);
 	}
 	
 	if (exceptionType != "")
-		handleExceptions(exceptionType, &literalInt, &literalFloat, &literalDouble);
+		handleExceptions(exceptionType, literalInt, literalFloat, literalDouble);
 
-	printLiterals(literalChar, literalInt, literalFloat, literalDouble, exceptionType, &decimalCount, foundInt);
+	printLiterals(literalChar, literalInt, literalFloat, literalDouble, exceptionType, decimalCount, foundInt);
 };
 
-void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingFound, bool* foundFloat, bool* foundDouble, int* decimalCount) { 
+void ScalarConverter::isFloatDouble(const std::string& literal, bool& somethingFound, bool& foundFloat, bool& foundDouble, int& decimalCount) { 
 
 	size_t	periodPosition	= literal.find('.');
 	size_t	lastPosition 	= literal.length() - 1;
@@ -101,24 +101,24 @@ void ScalarConverter::isFloatDouble(const std::string& literal, bool* somethingF
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return ;
-		*decimalCount += 1;
+		decimalCount += 1;
 	}
 	if (literal[lastPosition] != 'f')
 	{
 		if (std::isdigit(static_cast<unsigned char>(literal[lastPosition])) != false || literal[lastPosition] == '.')
 		{
-			*somethingFound = true;
-			*foundDouble = true;
-			*decimalCount += 1;
+			somethingFound = true;
+			foundDouble = true;
+			decimalCount += 1;
 		}
 		return ;
 	}
-	*somethingFound = true;
-	*foundFloat = true;
+	somethingFound = true;
+	foundFloat = true;
 	return ;
 };
 
-void ScalarConverter::isInt(const std::string& literal, bool* somethingFound, bool* foundInt)
+void ScalarConverter::isInt(const std::string& literal, bool& somethingFound, bool& foundInt)
 {
 	size_t len = literal.length() - 1;
 	for (size_t i = 0; i <= len; i++)
@@ -128,132 +128,124 @@ void ScalarConverter::isInt(const std::string& literal, bool* somethingFound, bo
 		if (std::isdigit(static_cast<unsigned char>(literal[i])) == false)
 			return ;
 	}
-	*somethingFound = true;
-	*foundInt = true;
+	somethingFound = true;
+	foundInt = true;
 	return ;
 }
 
-void ScalarConverter::isChar(const std::string& literal, bool* somethingFound, bool* foundChar)
+void ScalarConverter::isChar(const std::string& literal, bool& somethingFound, bool& foundChar)
 {
 	size_t len = literal.length();
 	if (len != 1)
 		return ;
 	if (std::isprint(static_cast<unsigned char>(literal[0])) == false)
 		return ;
-	*somethingFound = true;
-	*foundChar = true;
+	somethingFound = true;
+	foundChar = true;
 	return ;
 };
 
-void ScalarConverter::isException(const std::string& literal, std::string* exceptionType)
+void ScalarConverter::isException(const std::string& literal, std::string& exceptionType)
 {
 	if (literal == "nan" || literal == "nanf")
-		*exceptionType = "nan";
+		exceptionType = "nan";
 	else if (literal == "+inf" || literal == "+inff" || literal == "inf")
-		*exceptionType = "+inf";
+		exceptionType = "+inf";
 	else if (literal == "-inf" || literal == "-inff")
-		*exceptionType = "-inf";
+		exceptionType = "-inf";
 	return ;
 };
 
-double ScalarConverter::makeDouble(const std::string& literal, std::string* exceptionType) {
+double ScalarConverter::makeDouble(const std::string& literal, std::string& exceptionType) {
 	double check = std::stod(literal);
-	if (check < 32 || check	> 126)
-	{
-		*exceptionType = "non-printable";
-		if (check < 0 || check > 127)
-			*exceptionType += " | impossible conversion";
-		if (check < INT_MIN || check > INT_MAX)
-			*exceptionType += " | int overflow";
-	}
+	checkLimits(check, exceptionType);
 	return check;
 };
 
-float ScalarConverter::makeFloat(const std::string& literal, std::string* exceptionType) {
+float ScalarConverter::makeFloat(const std::string& literal, std::string& exceptionType) {
 	double check = std::stod(literal);
-	if (check < 32 || check	> 126)
-	{
-		*exceptionType = "non-printable";
-		if (check < 0 || check > 127)
-			*exceptionType += " | impossible conversion";
-		if (check < INT_MIN || check > INT_MAX)
-			*exceptionType += " | int overflow";
-	}
+	checkLimits(check, exceptionType);
 	return static_cast<float>(check);
 };
 
-int ScalarConverter::makeInt(const std::string& literal, std::string* exceptionType) {
+int ScalarConverter::makeInt(const std::string& literal, std::string& exceptionType) {
 	double check = std::stod(literal);
-	if (check < 32 || check	> 126)
-	{
-		*exceptionType = "non-printable";
-		if (check < 0 || check > 127)
-			*exceptionType += " | impossible conversion";
-		if (check < INT_MIN || check > INT_MAX)
-			*exceptionType += " | int overflow";
-	}
+	checkLimits(check, exceptionType);
 	return static_cast<int>(check);
 };
 
-char ScalarConverter::makeChar(const std::string& literal, std::string* exceptionType) {
+char ScalarConverter::makeChar(const std::string& literal, std::string& exceptionType) {
 	if (std::isprint(static_cast<unsigned char>(literal[0])) == false)
 	{
-		*exceptionType = "non-printable";
+		exceptionType = "non-printable";
 		return (static_cast<char>(0));
 	}
 	return static_cast<char>(literal[0]);
 };
 
-void ScalarConverter::convertFromChar(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble) {
-	*literalInt = static_cast<int>(*literalChar);
-	*literalFloat= static_cast<float>(*literalChar);
-	*literalDouble = static_cast<double>(*literalChar);
+void ScalarConverter::checkLimits(const double& check, std::string& exceptionType)
+{
+	if (check < 32 || check	> 126)
+	{
+		exceptionType = "non-printable";
+		if (check < 0 || check > 127)
+			exceptionType += " | impossible conversion";
+		if (check < INT_MIN || check > INT_MAX)
+			exceptionType += " | int overflow";
+	}
+	return ;
+}
+
+void ScalarConverter::convertFromChar(char& literalChar, int& literalInt, float& literalFloat, double& literalDouble) {
+	literalInt = static_cast<int>(literalChar);
+	literalFloat= static_cast<float>(literalChar);
+	literalDouble = static_cast<double>(literalChar);
 };
 
-void ScalarConverter::convertFromInt(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble) {
-	*literalChar = static_cast<char>(*literalInt);
-	*literalFloat= static_cast<float>(*literalInt);
-	*literalDouble = static_cast<double>(*literalInt);
+void ScalarConverter::convertFromInt(char& literalChar, int& literalInt, float& literalFloat, double& literalDouble)  {
+	literalChar = static_cast<char>(literalInt);
+	literalFloat= static_cast<float>(literalInt);
+	literalDouble = static_cast<double>(literalInt);
 };
 
-void ScalarConverter::convertFromFloat(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble) {
-	*literalChar = static_cast<char>(*literalFloat);
-	*literalInt = static_cast<int>(*literalFloat);
-	*literalDouble = static_cast<double>(*literalFloat);
+void ScalarConverter::convertFromFloat(char& literalChar, int& literalInt, float& literalFloat, double& literalDouble)  {
+	literalChar = static_cast<char>(literalFloat);
+	literalInt = static_cast<int>(literalFloat);
+	literalDouble = static_cast<double>(literalFloat);
 };
 
-void ScalarConverter::convertFromDouble(char* literalChar, int* literalInt, float* literalFloat, double* literalDouble) {
-	*literalChar = static_cast<char>(*literalDouble);
-	*literalInt = static_cast<int>(*literalDouble);
-	*literalFloat = static_cast<float>(*literalDouble);
+void ScalarConverter::convertFromDouble(char& literalChar, int& literalInt, float& literalFloat, double& literalDouble)  {
+	literalChar = static_cast<char>(literalDouble);
+	literalInt = static_cast<int>(literalDouble);
+	literalFloat = static_cast<float>(literalDouble);
 };
 
-void ScalarConverter::handleExceptions(const std::string& exceptionType, int* literalInt, float* literalFloat, double* literalDouble) {
+void ScalarConverter::handleExceptions(const std::string& exceptionType, int& literalInt, float& literalFloat, double& literalDouble) {
 	if (exceptionType == "nan")
 	{
-		*literalFloat = std::stof("nan");
-		*literalDouble = std::stof("nan");
+		literalFloat = std::stof("nan");
+		literalDouble = std::stof("nan");
 		return ;
 	}
 	else if (exceptionType == "+inf" || exceptionType == "inf")
 	{
-		*literalInt = 2147483647;
-		*literalFloat = std::stof("inf");
-		*literalDouble = std::stod("inf");
+		literalInt = 2147483647;
+		literalFloat = std::stof("inf");
+		literalDouble = std::stod("inf");
 	}
 	else if (exceptionType == "-inf")
 	{
-		*literalInt = -2147483648;
-		*literalFloat = std::stof("-inf");
-		*literalDouble = std::stod("-inf");
+		literalInt = -2147483648;
+		literalFloat = std::stof("-inf");
+		literalDouble = std::stod("-inf");
 	}
 	return ;
 };
 
 void ScalarConverter::printLiterals(const char& literalChar, const int& literalInt, const float& literalFloat, const double& literalDouble, \
-	const std::string& exceptionType, int* decimalCount, bool& foundInt) {
-	if (*decimalCount == 0)
-		*decimalCount += 1;
+	const std::string& exceptionType, int& decimalCount, bool& foundInt) {
+	if (decimalCount == 0)
+		decimalCount = 1;
 
 	//char
 	if (exceptionType.find("impossible conversion") != std::string::npos)
@@ -276,7 +268,7 @@ void ScalarConverter::printLiterals(const char& literalChar, const int& literalI
 		std::cout << "float: impossible" << std::endl;
 	else
 	{
-		std::cout << std::fixed << std::setprecision(*decimalCount);
+		std::cout << std::fixed << std::setprecision(decimalCount);
 		std::cout << "float: " << literalFloat << "f" << std::endl;
 	}
 
@@ -285,47 +277,7 @@ void ScalarConverter::printLiterals(const char& literalChar, const int& literalI
 		std::cout << "double: impossible" << std::endl;
 	else
 	{
-		std::cout << std::fixed << std::setprecision(*decimalCount);
+		std::cout << std::fixed << std::setprecision(decimalCount);
 		std::cout << "double: " << literalDouble << std::endl;
 	}
-
-
-	// if (exceptionType == "")
-	// {
-	// 	std::cout << "char: " << literalChar << std::endl;
-	// 	std::cout << "int: " << literalInt << std::endl;
-	// 	std::cout << std::fixed << std::setprecision(*decimalCount);
-	// 	std::cout << "float: " << literalFloat << "f" << std::endl;
-	// 	std::cout << "double: " << literalDouble << std::endl;
-	// }
-	// else if (exceptionType == "non-printable")
-	// {
-	// 	std::cout << "char: non-printable" << std::endl;
-	// 	std::cout << "int: " << literalInt << std::endl;
-	// 	std::cout << std::fixed << std::setprecision(*decimalCount);
-	// 	std::cout << "float: " << literalFloat << "f" << std::endl;
-	// 	std::cout << "double: " << literalDouble << std::endl;
-	// }
-	// else if (exceptionType == "int overflow")
-	// {
-	// 	std::cout << "char: impossible" << std::endl;
-	// 	std::cout << "int: overflow" << std::endl;
-	// 	std::cout << std::fixed << std::setprecision(*decimalCount);
-	// 	std::cout << "float: " << literalFloat << "f" << std::endl;
-	// 	std::cout << "double: " << literalDouble << std::endl;
-	// }
-	// else if (exceptionType == "nan")
-	// {
-	// 	std::cout << "char: impossible" << std::endl;
-	// 	std::cout << "int: impossible" << std::endl;
-	// 	std::cout << "float: " << literalFloat << "f" << std::endl;
-	// 	std::cout << "double: " << literalDouble << std::endl;
-	// }
-	// else if (exceptionType == "+inf" || exceptionType == "-inf")
-	// {
-	// 	std::cout << "char: impossible" << std::endl;
-	// 	std::cout << "int: " << literalInt << std::endl;
-	// 	std::cout << "float: " << literalFloat << "f" << std::endl;
-	// 	std::cout << "double: " << literalDouble << std::endl;
-	// }
 }

@@ -1,13 +1,14 @@
-NAME	=	convert
+NAME	=	conversion
 CC		=	c++
 FLAGS	=	-Wall -Wextra -Werror -std=c++20 -g
 SRCS	=	main.cpp \
 			ScalarConverter.cpp
+HEADER  =	ScalarConverter.hpp
 OBJS	=	$(SRCS:.cpp=.o)
 
 all: $(NAME)
 
-%.o: %.cpp
+%.o: %.cpp $(HEADER)
 	@$(CC) $(FLAGS) -c $< -o $@
 
 $(NAME): $(OBJS)
