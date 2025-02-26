@@ -4,6 +4,7 @@ int main(void)
 {
     for (const std::string& test : {"123", "-99", "100.100f", "3.", "a", "A", "nan", "+inf", "-inf", "2147483648", "2147483647999.0"}) 
     {
+        std::cout << "testing: " << test << std::endl;
         ScalarConverter::convert(test);
         std::cout << "\n";
     };

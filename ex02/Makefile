@@ -1,6 +1,6 @@
 NAME	=	real_type
 CC		=	c++
-FLAGS	=	-Wall -Wextra -Werror -std=c++20 -g
+FLAGS	=	-Wall -Wextra -Werror -std=c++20
 SRCS	=	main.cpp \
 			Base.cpp
 HEADERS  =	Base.hpp \

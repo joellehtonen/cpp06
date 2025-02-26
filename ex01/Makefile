@@ -1,6 +1,6 @@
 NAME	=	serialization
 CC		=	c++
-FLAGS	=	-Wall -Wextra -Werror -std=c++20 -g
+FLAGS	=	-Wall -Wextra -Werror -std=c++20
 SRCS	=	main.cpp \
 			Serializer.cpp
 HEADER  =	Serializer.hpp
